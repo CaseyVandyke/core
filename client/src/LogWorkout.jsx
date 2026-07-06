@@ -65,11 +65,11 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
       <h2>Log workout</h2>
 
       <div className="row" style={{ maxWidth: 500 }}>
-        <div>
+        <div className="full-sm">
           <label>Date</label>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
-        <div>
+        <div className="full-sm">
           <label>Notes (optional)</label>
           <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. felt strong" />
         </div>
@@ -78,7 +78,7 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
       <form onSubmit={addSet} className="section">
         <div className="section-title">Add set</div>
         <div className="row">
-          <div style={{ flex: 2 }}>
+          <div className="full-sm" style={{ flex: 2 }}>
             <label>Exercise</label>
             <select value={exerciseId} onChange={(e) => setExerciseId(e.target.value)}>
               {exercises.map((x) => (
@@ -106,7 +106,7 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
           <button className="shrink" type="submit">Add</button>
         </div>
         <div className="row" style={{ marginTop: "1rem" }}>
-          <div style={{ flex: 2 }}>
+          <div className="full-sm" style={{ flex: 2 }}>
             <label>Exercise not listed?</label>
             <input
               value={newExercise}
