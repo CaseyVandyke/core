@@ -21,4 +21,7 @@ export const api = {
   addWorkout: (workout) => request("POST", "/api/workouts", workout),
   deleteWorkout: (id) => request("DELETE", `/api/workouts/${id}`),
   progress: () => request("GET", "/api/progress"),
+  goals: () => request("GET", "/api/goals"),
+  setGoal: (goal) => request("POST", "/api/goals", goal),
+  deleteGoal: (id) => request("DELETE", `/api/goals/${id}`),
 };

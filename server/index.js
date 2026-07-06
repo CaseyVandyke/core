@@ -162,6 +162,40 @@ app.get("/api/progress", requireAuth, (req, res) => {
   res.json(rows);
 });
 
+// ---- Goals ----
+// One goal per exercise per user: "top-set X by date Y". Setting a goal
+// for an exercise that already has one replaces it.
+
+app.get("/api/goals", requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT g.id, g.exercise_id, e.name AS exercise, g.target_weight, g.target_date
+    FROM goals g JOIN exercises e ON e.id = g.exercise_id
+    WHERE g.user_id = ? ORDER BY g.target_date
+  `).all(req.session.userId);
+  res.json(rows);
+});
+
+app.post("/api/goals", requireAuth, (req, res) => {
+  const { exercise_id, target_weight, target_date } = req.body || {};
+  if (!exercise_id || !(target_weight > 0) || !/^\d{4}-\d{2}-\d{2}$/.test(target_date || "")) {
+    return res.status(400).json({ error: "exercise_id, target_weight > 0, and target_date (YYYY-MM-DD) required" });
+  }
+  const info = db.prepare(`
+    INSERT INTO goals (user_id, exercise_id, target_weight, target_date)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT (user_id, exercise_id)
+    DO UPDATE SET target_weight = excluded.target_weight, target_date = excluded.target_date
+  `).run(req.session.userId, exercise_id, target_weight, target_date);
+  res.json({ ok: true, id: info.lastInsertRowid });
+});
+
+app.delete("/api/goals/:id", requireAuth, (req, res) => {
+  const info = db.prepare("DELETE FROM goals WHERE id = ? AND user_id = ?")
+    .run(req.params.id, req.session.userId);
+  if (info.changes === 0) return res.status(404).json({ error: "not found" });
+  res.json({ ok: true });
+});
+
 // ---- Static frontend (built React app) ----
 
 const clientDist = path.join(__dirname, "..", "client", "dist");

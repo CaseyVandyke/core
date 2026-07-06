@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { api } from "./api.js";
 
@@ -10,14 +10,25 @@ const METRICS = {
   volume: "Total volume",
 };
 
+const today = () => new Date().toLocaleDateString("en-CA");
+
 export default function Progress() {
   const [rows, setRows] = useState(null);
+  const [goals, setGoals] = useState([]);
   const [metric, setMetric] = useState("top_weight");
   const [selected, setSelected] = useState(null); // one exercise name
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  // goal form state
+  const [goalWeight, setGoalWeight] = useState("");
+  const [goalDate, setGoalDate] = useState("");
+  const [error, setError] = useState("");
+
+  const loadGoals = () => api.goals().then(setGoals);
+
   useEffect(() => {
     api.progress().then(setRows);
+    loadGoals();
   }, []);
 
   // Exercises that actually have logged data, most data first
@@ -33,13 +44,43 @@ export default function Progress() {
     if (rows && selected === null && exerciseNames.length) setSelected(exerciseNames[0]);
   }, [rows, exerciseNames, selected]);
 
-  const chartData = useMemo(() => {
+  const goal = goals.find((g) => g.exercise === selected);
+  const showGoal = goal && metric === "top_weight";
+
+  const series = useMemo(() => {
     if (!rows || !selected) return [];
     return rows
       .filter((r) => r.exercise === selected)
       .map((r) => ({ date: r.date, value: Math.round(r[metric] * 10) / 10 }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [rows, selected, metric]);
+
+  // Chart data, with a dashed "required path" from the latest lift to the goal
+  const chartData = useMemo(() => {
+    if (!showGoal || series.length === 0) return series;
+    const data = series.map((d) => ({ ...d }));
+    const last = data[data.length - 1];
+    if (goal.target_date > last.date) {
+      last.goalPath = last.value;
+      data.push({ date: goal.target_date, goalPath: goal.target_weight });
+    }
+    return data;
+  }, [series, showGoal, goal]);
+
+  // "What you'd need to do": pace from latest top set to the target
+  const pace = useMemo(() => {
+    if (!showGoal || series.length === 0) return null;
+    const current = series[series.length - 1].value;
+    const toGo = Math.round((goal.target_weight - current) * 10) / 10;
+    if (toGo <= 0) return { done: true, current };
+    const days = Math.round((new Date(goal.target_date) - new Date(today())) / 86400000);
+    if (days <= 0) return { late: true, current, toGo };
+    const weeks = Math.max(days / 7, 0.1);
+    return {
+      current, toGo, days,
+      perWeek: Math.round((toGo / weeks) * 10) / 10,
+    };
+  }, [series, showGoal, goal]);
 
   if (!rows) return <div className="container"><p className="muted">Loading…</p></div>;
 
@@ -55,6 +96,29 @@ export default function Progress() {
   function pick(name) {
     setSelected(name);
     setPickerOpen(false);
+    setError("");
+  }
+
+  async function saveGoal(e) {
+    e.preventDefault();
+    setError("");
+    const exercise_id = rows.find((r) => r.exercise === selected)?.exercise_id;
+    if (!exercise_id || !(goalWeight > 0) || !goalDate) {
+      return setError("goal needs a weight and a date");
+    }
+    try {
+      await api.setGoal({ exercise_id, target_weight: Number(goalWeight), target_date: goalDate });
+      setGoalWeight("");
+      setGoalDate("");
+      loadGoals();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function removeGoal() {
+    await api.deleteGoal(goal.id);
+    loadGoals();
   }
 
   return (
@@ -62,7 +126,7 @@ export default function Progress() {
       <h2>Progress</h2>
 
       <div className="row" style={{ maxWidth: 640 }}>
-        <div>
+        <div className="full-sm">
           <label>Lift</label>
           <div className="dropdown">
             <button type="button" onClick={() => setPickerOpen(!pickerOpen)} style={{ width: "100%", textAlign: "left" }}>
@@ -82,7 +146,7 @@ export default function Progress() {
             )}
           </div>
         </div>
-        <div>
+        <div className="full-sm">
           <label>Metric</label>
           <select value={metric} onChange={(e) => setMetric(e.target.value)}>
             {Object.entries(METRICS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -99,7 +163,7 @@ export default function Progress() {
             <Tooltip
               contentStyle={{ background: "#000", border: "1px solid #fff", borderRadius: 0 }}
               labelStyle={{ color: "#9a9a9a" }}
-              formatter={(v) => [v, METRICS[metric]]}
+              formatter={(v, name) => [v, name === "goalPath" ? "Required path" : METRICS[metric]]}
               position={{ y: 10 }}
               isAnimationActive={false}
             />
@@ -112,13 +176,76 @@ export default function Progress() {
               dot={{ r: 3 }}
               connectNulls
             />
+            {showGoal && (
+              <Line
+                type="linear"
+                dataKey="goalPath"
+                stroke="#ffffff"
+                strokeWidth={1.5}
+                strokeDasharray="6 4"
+                dot={false}
+                connectNulls
+              />
+            )}
+            {showGoal && (
+              <ReferenceDot
+                x={goal.target_date}
+                y={goal.target_weight}
+                r={6}
+                fill="#000"
+                stroke="#ffffff"
+                strokeWidth={2}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="section">
+        <div className="section-title">
+          Goal — {selected}
+          {goal && (
+            <button className="small" style={{ float: "right" }} onClick={removeGoal}>delete</button>
+          )}
+        </div>
+
+        {goal && pace?.done && (
+          <p>✳ <b>Goal reached.</b> Target was {goal.target_weight} by {goal.target_date}; your top set is already {pace.current}. Set a new one below.</p>
+        )}
+        {goal && pace?.late && (
+          <p>✳ Target date {goal.target_date} has passed — you're at {pace.current}, {pace.toGo} short of {goal.target_weight}. Update the goal below.</p>
+        )}
+        {goal && pace && !pace.done && !pace.late && (
+          <p>
+            ✳ <b>{goal.target_weight} by {goal.target_date}.</b> You're at {pace.current} —
+            {" "}<b>{pace.toGo} to go in {pace.days} days</b>, which means adding about
+            {" "}<b>{pace.perWeek} per week</b> to your top set.
+          </p>
+        )}
+        {goal && metric !== "top_weight" && (
+          <p className="muted" style={{ fontSize: "0.8rem" }}>
+            Goal overlay shows on the "Top set weight" metric.
+          </p>
+        )}
+
+        <form onSubmit={saveGoal} className="row" style={{ maxWidth: 500 }}>
+          <div>
+            <label>{goal ? "New target weight" : "Target weight"}</label>
+            <input type="number" min="1" step="0.5" value={goalWeight} onChange={(e) => setGoalWeight(e.target.value)} />
+          </div>
+          <div>
+            <label>By date</label>
+            <input type="date" min={today()} value={goalDate} onChange={(e) => setGoalDate(e.target.value)} />
+          </div>
+          <button className="shrink" type="submit">{goal ? "Update" : "Set goal"}</button>
+        </form>
+        {error && <div className="error">✳ {error}</div>}
       </div>
 
       <p className="muted" style={{ fontSize: "0.8rem" }}>
         ✳ Estimated 1RM uses the Epley formula (weight × (1 + reps/30)) so sets with
         different rep counts compare fairly. Volume is total reps × weight per workout.
+        Goals track your top set weight.
       </p>
     </div>
   );

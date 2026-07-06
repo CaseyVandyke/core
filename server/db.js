@@ -47,6 +47,16 @@ db.exec(`
     weight      REAL NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS goals (
+    id            INTEGER PRIMARY KEY,
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    exercise_id   INTEGER NOT NULL REFERENCES exercises(id),
+    target_weight REAL NOT NULL,
+    target_date   TEXT NOT NULL,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, exercise_id)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_workouts_user_date ON workouts (user_id, date);
   CREATE INDEX IF NOT EXISTS idx_sets_workout ON sets (workout_id);
   CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets (exercise_id);
