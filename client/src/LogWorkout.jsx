@@ -18,9 +18,11 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
 
   function addSet(e) {
     e.preventDefault();
-    // Reps accepts a single number ("8") or a per-set list ("12,10,8").
+    // Reps accepts a single number ("8") or a per-set list. Comma, space,
+    // or period all separate values ("12,10,8" / "12 10 8" / "12.10.8" —
+    // period included because the iOS numeric keypad has no comma).
     // A list overrides the Sets count: one set per listed value.
-    const repList = String(reps).split(/[,\s]+/).filter(Boolean).map(Number);
+    const repList = String(reps).split(/[,.\s]+/).filter(Boolean).map(Number);
     if (!exerciseId || weight === "" || repList.length === 0) return;
     if (repList.some((r) => !(r > 0) || !Number.isInteger(r))) return;
     const perSetReps = repList.length > 1
@@ -93,8 +95,8 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
           <div>
             <label>Reps</label>
             <input
-              inputMode="numeric"
-              placeholder="8 or 12,10,8"
+              inputMode="decimal"
+              placeholder="8 or 12.10.8"
               value={reps}
               onChange={(e) => setReps(e.target.value)}
             />
