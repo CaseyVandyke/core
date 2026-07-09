@@ -56,6 +56,11 @@ nav {
   border-bottom: var(--hairline);
   text-transform: uppercase;
   flex-wrap: wrap;
+  /* stay pinned while the page scrolls underneath */
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
 }
 nav .brand { color: var(--accent); font-family: var(--display); font-weight: 900; font-size: 1.3rem; }
 nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
