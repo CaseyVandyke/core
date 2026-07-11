@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { api } from "./api.js";
+import { formatDate } from "./dates.js";
 import { SetTable } from "./Home.jsx";
 
 export default function History({ workouts, onChanged }) {
@@ -47,7 +48,7 @@ export default function History({ workouts, onChanged }) {
           <div className="section" key={date} style={{ padding: 0 }}>
             <div className="day-header" onClick={() => toggle(date)}>
               <span className={isOpen ? "star" : "muted"}>{isOpen ? "▾" : "▸"}</span>
-              <b>{date}</b>
+              <b>{formatDate(date)}</b>
               <span className="muted">
                 {dayWorkouts.length > 1 ? `${dayWorkouts.length} workouts · ` : ""}{totalSets} sets
               </span>

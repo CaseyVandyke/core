@@ -3,6 +3,7 @@ import {
   CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { api } from "./api.js";
+import { formatDate, shortDate } from "./dates.js";
 
 const METRICS = {
   top_weight: "Top set weight",
@@ -158,11 +159,12 @@ export default function Progress() {
         <ResponsiveContainer width="100%" height={420}>
           <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="rgba(255,255,255,0.15)" />
-            <XAxis dataKey="date" stroke="#9a9a9a" tick={{ fontSize: 12 }} />
+            <XAxis dataKey="date" stroke="#9a9a9a" tick={{ fontSize: 12 }} tickFormatter={shortDate} />
             <YAxis stroke="#9a9a9a" tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
             <Tooltip
               contentStyle={{ background: "#000", border: "1px solid #fff", borderRadius: 0 }}
               labelStyle={{ color: "#9a9a9a" }}
+              labelFormatter={formatDate}
               formatter={(v, name) => [v, name === "goalPath" ? "Required path" : METRICS[metric]]}
               position={{ y: 10 }}
               isAnimationActive={false}
@@ -210,14 +212,14 @@ export default function Progress() {
         </div>
 
         {goal && pace?.done && (
-          <p>✳ <b>Goal reached.</b> Target was {goal.target_weight} by {goal.target_date}; your top set is already {pace.current}. Set a new one below.</p>
+          <p>✳ <b>Goal reached.</b> Target was {goal.target_weight} by {formatDate(goal.target_date)}; your top set is already {pace.current}. Set a new one below.</p>
         )}
         {goal && pace?.late && (
-          <p>✳ Target date {goal.target_date} has passed — you're at {pace.current}, {pace.toGo} short of {goal.target_weight}. Update the goal below.</p>
+          <p>✳ Target date {formatDate(goal.target_date)} has passed — you're at {pace.current}, {pace.toGo} short of {goal.target_weight}. Update the goal below.</p>
         )}
         {goal && pace && !pace.done && !pace.late && (
           <p>
-            ✳ <b>{goal.target_weight} by {goal.target_date}.</b> You're at {pace.current} —
+            ✳ <b>{goal.target_weight} by {formatDate(goal.target_date)}.</b> You're at {pace.current} —
             {" "}<b>{pace.toGo} to go in {pace.days} days</b>, which means adding about
             {" "}<b>{pace.perWeek} per week</b> to your top set.
           </p>

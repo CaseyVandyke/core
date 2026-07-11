@@ -1,3 +1,5 @@
+import { formatDate } from "./dates.js";
+
 export default function Home({ workouts, onNavigate }) {
   const totalSets = workouts.reduce((n, w) => n + w.sets.length, 0);
   const firstDate = workouts.length ? workouts[workouts.length - 1].date : null;
@@ -32,7 +34,7 @@ export default function Home({ workouts, onNavigate }) {
 
       {latest && (
         <div className="section">
-          <div className="section-title">Last workout — {latest.date}</div>
+          <div className="section-title">Last workout — {formatDate(latest.date)}</div>
           <SetTable sets={latest.sets} />
         </div>
       )}
