@@ -13,8 +13,8 @@ export default function History({ workouts, onChanged }) {
     return [...byDate.entries()];
   }, [workouts]);
 
-  // Most recent day starts open, the rest collapsed
-  const [open, setOpen] = useState(() => new Set(days.length ? [days[0][0]] : []));
+  // All days start collapsed
+  const [open, setOpen] = useState(() => new Set());
 
   function toggle(date) {
     const next = new Set(open);
