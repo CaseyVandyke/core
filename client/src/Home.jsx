@@ -106,6 +106,7 @@ function TrainingCalendar({ workouts }) {
           );
         })}
       </div>
+      <div className="cal-hint">◂ swipe for earlier months</div>
     </div>
   );
 }
