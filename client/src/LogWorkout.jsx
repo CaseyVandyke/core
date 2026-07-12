@@ -180,10 +180,15 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
       )}
 
       {saved && (
-        <div className="section" style={{ borderColor: "var(--accent)" }}>
-          ✳ <b>Workout saved.</b>{" "}
-          <a onClick={() => onNavigate("history")}>View it in History</a> or keep logging —
-          the form is ready for the next one.
+        <div className="modal-backdrop" onClick={() => setSaved(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3><span className="star">✳</span> Workout saved</h3>
+            <p className="muted">The form is reset and ready for the next one.</p>
+            <div className="row">
+              <button className="primary" onClick={() => onNavigate("history")}>View history</button>
+              <button onClick={() => setSaved(false)}>Keep logging</button>
+            </div>
+          </div>
         </div>
       )}
 
