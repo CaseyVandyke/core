@@ -58,7 +58,8 @@ export default function App() {
         <LogWorkout
           exercises={exercises}
           onExerciseAdded={(ex) => setExercises((xs) => [...xs, ex].sort((a, b) => a.name.localeCompare(b.name)))}
-          onSaved={() => { reload(); setPage("history"); }}
+          onSaved={reload}
+          onNavigate={setPage}
         />
       )}
       {page === "history" && <History workouts={workouts} onChanged={reload} />}

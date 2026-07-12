@@ -3,11 +3,12 @@ import { api } from "./api.js";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 
-export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
+export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseAdded }) {
   const [date, setDate] = useState(today());
   const [notes, setNotes] = useState("");
   const [sets, setSets] = useState([]);
   const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   // rest timer: counts up from the last logged set
   const [lastSetAt, setLastSetAt] = useState(null);
@@ -17,7 +18,7 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, [lastSetAt]);
-  const restSecs = lastSetAt ? Math.floor((now - lastSetAt) / 1000) : null;
+  const restSecs = lastSetAt ? Math.max(0, Math.floor((now - lastSetAt) / 1000)) : null;
   const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   // entry row state
@@ -48,7 +49,11 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
     }))]);
     // keep exercise + weight for fast consecutive entries, clear reps
     setReps("");
+    // reset both clock readings together, or the first render after a
+    // restart compares a fresh start against a stale "now" and goes negative
+    setNow(Date.now());
     setLastSetAt(Date.now());
+    setSaved(false);
   }
 
   async function createExercise() {
@@ -68,6 +73,12 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
     setError("");
     try {
       await api.addWorkout({ date, notes, sets });
+      // stay on this page: reset the form, stop the timer, confirm
+      setSets([]);
+      setNotes("");
+      setDate(today());
+      setLastSetAt(null);
+      setSaved(true);
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -165,6 +176,14 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
           <div style={{ marginTop: "1rem" }}>
             <button className="primary" onClick={save}>✳ Save workout</button>
           </div>
+        </div>
+      )}
+
+      {saved && (
+        <div className="section" style={{ borderColor: "var(--accent)" }}>
+          ✳ <b>Workout saved.</b>{" "}
+          <a onClick={() => onNavigate("history")}>View it in History</a> or keep logging —
+          the form is ready for the next one.
         </div>
       )}
 
