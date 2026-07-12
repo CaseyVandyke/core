@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { formatDate } from "./dates.js";
 
 export default function Home({ workouts, onNavigate }) {
@@ -79,10 +80,16 @@ function TrainingCalendar({ workouts }) {
 
   const trainedDays = setsByDate.size;
 
+  // The grid is wider than a phone; start scrolled to the recent end
+  const calRef = useRef(null);
+  useEffect(() => {
+    if (calRef.current) calRef.current.scrollLeft = calRef.current.scrollWidth;
+  }, []);
+
   return (
     <div className="section">
       <div className="section-title">Training calendar — {trainedDays} days in the last 6 months</div>
-      <div className="cal">
+      <div className="cal" ref={calRef}>
         {weeks.map((week, i) => {
           const monthStart = week.find((c) => c.firstOfMonth);
           return (
