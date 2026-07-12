@@ -32,12 +32,73 @@ export default function Home({ workouts, onNavigate }) {
         </button>
       </div>
 
+      <TrainingCalendar workouts={workouts} />
+
       {latest && (
         <div className="section">
           <div className="section-title">Last workout — {formatDate(latest.date)}</div>
           <SetTable sets={latest.sets} />
         </div>
       )}
+    </div>
+  );
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// GitHub-style heatmap of the last 26 weeks: one column per week,
+// one orange cell per day trained
+function TrainingCalendar({ workouts }) {
+  const setsByDate = new Map();
+  for (const w of workouts) {
+    setsByDate.set(w.date, (setsByDate.get(w.date) || 0) + w.sets.length);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const end = new Date(today);
+  end.setDate(end.getDate() + (6 - end.getDay())); // pad to end of this week
+  const cursor = new Date(end);
+  cursor.setDate(cursor.getDate() - (26 * 7 - 1));
+
+  const weeks = [];
+  while (cursor <= end) {
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      week.push({
+        iso: cursor.toLocaleDateString("en-CA"),
+        sets: setsByDate.get(cursor.toLocaleDateString("en-CA")) || 0,
+        future: cursor > today,
+        firstOfMonth: cursor.getDate() === 1,
+        month: cursor.getMonth(),
+      });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  const trainedDays = setsByDate.size;
+
+  return (
+    <div className="section">
+      <div className="section-title">Training calendar — {trainedDays} days in the last 6 months</div>
+      <div className="cal">
+        {weeks.map((week, i) => {
+          const monthStart = week.find((c) => c.firstOfMonth);
+          return (
+            <div className="cal-col" key={i}>
+              <div className="cal-month">{monthStart ? MONTHS[monthStart.month] : ""}</div>
+              {week.map((c) => (
+                <div
+                  key={c.iso}
+                  title={c.future ? "" : `${c.iso}${c.sets ? ` — ${c.sets} sets` : ""}`}
+                  className={`cal-cell${c.sets ? " on" : ""}${c.future ? " future" : ""}`}
+                />
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

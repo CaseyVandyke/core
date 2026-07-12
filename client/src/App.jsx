@@ -5,8 +5,9 @@ import Home from "./Home.jsx";
 import LogWorkout from "./LogWorkout.jsx";
 import History from "./History.jsx";
 import Progress from "./Progress.jsx";
+import BodyWeight from "./BodyWeight.jsx";
 
-const PAGES = { home: "Home", log: "Log", history: "History", progress: "Progress" };
+const PAGES = { home: "Home", log: "Log", history: "History", progress: "Progress", weight: "Weight" };
 
 export default function App() {
   const [user, setUser] = useState(undefined); // undefined = still checking
@@ -62,6 +63,7 @@ export default function App() {
       )}
       {page === "history" && <History workouts={workouts} onChanged={reload} />}
       {page === "progress" && <Progress />}
+      {page === "weight" && <BodyWeight />}
     </>
   );
 }

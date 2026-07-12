@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "./api.js";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
@@ -8,6 +8,17 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
   const [notes, setNotes] = useState("");
   const [sets, setSets] = useState([]);
   const [error, setError] = useState("");
+
+  // rest timer: counts up from the last logged set
+  const [lastSetAt, setLastSetAt] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!lastSetAt) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [lastSetAt]);
+  const restSecs = lastSetAt ? Math.floor((now - lastSetAt) / 1000) : null;
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   // entry row state
   const [exerciseId, setExerciseId] = useState(exercises[0]?.id || "");
@@ -37,6 +48,7 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
     }))]);
     // keep exercise + weight for fast consecutive entries, clear reps
     setReps("");
+    setLastSetAt(Date.now());
   }
 
   async function createExercise() {
@@ -78,7 +90,15 @@ export default function LogWorkout({ exercises, onSaved, onExerciseAdded }) {
       </div>
 
       <form onSubmit={addSet} className="section">
-        <div className="section-title">Add set</div>
+        <div className="section-title">
+          Add set
+          {restSecs !== null && (
+            <span className="rest-timer">
+              rest <b>{mmss(restSecs)}</b>
+              <button className="small" type="button" onClick={() => setLastSetAt(null)} style={{ marginLeft: "0.6rem" }}>✕</button>
+            </span>
+          )}
+        </div>
         <div className="row">
           <div className="full-sm" style={{ flex: 2 }}>
             <label>Exercise</label>

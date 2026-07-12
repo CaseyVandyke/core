@@ -150,6 +150,18 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 .star { color: var(--accent); }
 .muted { color: var(--muted); }
 
+/* Rest timer in the add-set header */
+.rest-timer { float: right; color: var(--accent); text-transform: none; letter-spacing: normal; }
+.rest-timer b { font-size: 1rem; }
+
+/* Training calendar heatmap */
+.cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; }
+.cal-col { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.cal-month { height: 14px; font-size: 9px; color: var(--muted); white-space: nowrap; }
+.cal-cell { width: 13px; height: 13px; background: #1c1c1c; }
+.cal-cell.on { background: var(--accent); }
+.cal-cell.future { background: transparent; }
+
 /* History: collapsible day groups */
 .day-header {
   display: flex;

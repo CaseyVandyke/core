@@ -24,4 +24,7 @@ export const api = {
   goals: () => request("GET", "/api/goals"),
   setGoal: (goal) => request("POST", "/api/goals", goal),
   deleteGoal: (id) => request("DELETE", `/api/goals/${id}`),
+  bodyweight: () => request("GET", "/api/bodyweight"),
+  addBodyweight: (entry) => request("POST", "/api/bodyweight", entry),
+  deleteBodyweight: (id) => request("DELETE", `/api/bodyweight/${id}`),
 };

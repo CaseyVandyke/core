@@ -196,6 +196,35 @@ app.delete("/api/goals/:id", requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- Body weight ----
+// One entry per day; logging again on the same date replaces it.
+
+app.get("/api/bodyweight", requireAuth, (req, res) => {
+  const rows = db.prepare(
+    "SELECT id, date, weight FROM bodyweight WHERE user_id = ? ORDER BY date"
+  ).all(req.session.userId);
+  res.json(rows);
+});
+
+app.post("/api/bodyweight", requireAuth, (req, res) => {
+  const { date, weight } = req.body || {};
+  if (!(weight > 0)) return res.status(400).json({ error: "weight > 0 required" });
+  const d = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+  db.prepare(`
+    INSERT INTO bodyweight (user_id, date, weight)
+    VALUES (?, COALESCE(?, date('now', 'localtime')), ?)
+    ON CONFLICT (user_id, date) DO UPDATE SET weight = excluded.weight
+  `).run(req.session.userId, d, weight);
+  res.json({ ok: true });
+});
+
+app.delete("/api/bodyweight/:id", requireAuth, (req, res) => {
+  const info = db.prepare("DELETE FROM bodyweight WHERE id = ? AND user_id = ?")
+    .run(req.params.id, req.session.userId);
+  if (info.changes === 0) return res.status(404).json({ error: "not found" });
+  res.json({ ok: true });
+});
+
 // ---- Static frontend (built React app) ----
 
 const clientDist = path.join(__dirname, "..", "client", "dist");
