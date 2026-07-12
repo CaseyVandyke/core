@@ -80,10 +80,17 @@ function TrainingCalendar({ workouts }) {
 
   const trainedDays = setsByDate.size;
 
-  // The grid is wider than a phone; start scrolled to the recent end
+  // The grid is wider than a phone; start scrolled to the recent end.
+  // Re-snap after the web font loads, since it changes the grid width.
   const calRef = useRef(null);
   useEffect(() => {
-    if (calRef.current) calRef.current.scrollLeft = calRef.current.scrollWidth;
+    const snap = () => {
+      if (calRef.current) calRef.current.scrollLeft = calRef.current.scrollWidth;
+    };
+    snap();
+    document.fonts?.ready?.then(snap);
+    const t = setTimeout(snap, 400);
+    return () => clearTimeout(t);
   }, []);
 
   return (

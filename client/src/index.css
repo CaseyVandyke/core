@@ -155,7 +155,7 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 .rest-timer b { font-size: 1rem; }
 
 /* Training calendar heatmap */
-.cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin; scrollbar-color: var(--accent) #1c1c1c; }
+.cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--accent) #1c1c1c; }
 .cal::-webkit-scrollbar { height: 5px; }
 .cal::-webkit-scrollbar-track { background: #1c1c1c; }
 .cal::-webkit-scrollbar-thumb { background: var(--accent); }
