@@ -158,20 +158,22 @@ app.delete("/api/workouts/:id", requireAuth, (req, res) => {
 });
 
 // ---- Progress ----
-// One point per exercise per workout date: the top (heaviest) set,
-// plus estimated 1RM (Epley: weight * (1 + reps/30)) for fair
-// comparison across different rep counts.
+// One point per exercise per workout date. Strength: top (heaviest) set,
+// estimated 1RM (Epley: weight * (1 + reps/30)), and volume. Cardio:
+// total minutes and max incline for that day.
 
 app.get("/api/progress", requireAuth, (req, res) => {
   const rows = db.prepare(`
-    SELECT e.id AS exercise_id, e.name AS exercise, w.date,
+    SELECT e.id AS exercise_id, e.name AS exercise, e.kind, w.date,
            MAX(s.weight) AS top_weight,
            MAX(s.weight * (1 + s.reps / 30.0)) AS est_1rm,
-           SUM(s.reps * s.weight) AS volume
+           SUM(s.reps * s.weight) AS volume,
+           SUM(s.minutes) AS minutes,
+           MAX(s.incline) AS incline
     FROM sets s
     JOIN workouts w ON w.id = s.workout_id
     JOIN exercises e ON e.id = s.exercise_id
-    WHERE w.user_id = ? AND s.minutes IS NULL
+    WHERE w.user_id = ?
     GROUP BY e.id, w.date
     ORDER BY w.date
   `).all(req.session.userId);

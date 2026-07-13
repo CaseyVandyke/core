@@ -5,10 +5,15 @@ import {
 import { api } from "./api.js";
 import { formatDate, shortDate } from "./dates.js";
 
-const METRICS = {
+const STRENGTH_METRICS = {
   top_weight: "Top set weight",
   est_1rm: "Estimated 1RM",
   volume: "Total volume",
+};
+
+const CARDIO_METRICS = {
+  minutes: "Total minutes",
+  incline: "Max incline",
 };
 
 const today = () => new Date().toLocaleDateString("en-CA");
@@ -45,16 +50,21 @@ export default function Progress() {
     if (rows && selected === null && exerciseNames.length) setSelected(exerciseNames[0]);
   }, [rows, exerciseNames, selected]);
 
+  // Cardio lifts chart different metrics than strength lifts
+  const isCardio = rows?.find((r) => r.exercise === selected)?.kind === "cardio";
+  const metricOptions = isCardio ? CARDIO_METRICS : STRENGTH_METRICS;
+  const effMetric = metricOptions[metric] ? metric : Object.keys(metricOptions)[0];
+
   const goal = goals.find((g) => g.exercise === selected);
-  const showGoal = goal && metric === "top_weight";
+  const showGoal = goal && !isCardio && effMetric === "top_weight";
 
   const series = useMemo(() => {
     if (!rows || !selected) return [];
     return rows
       .filter((r) => r.exercise === selected)
-      .map((r) => ({ date: r.date, value: Math.round(r[metric] * 10) / 10 }))
+      .map((r) => ({ date: r.date, value: Math.round(r[effMetric] * 10) / 10 }))
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [rows, selected, metric]);
+  }, [rows, selected, effMetric]);
 
   // Chart data, with a dashed "required path" from the latest lift to the goal
   const chartData = useMemo(() => {
@@ -149,8 +159,8 @@ export default function Progress() {
         </div>
         <div className="full-sm">
           <label>Metric</label>
-          <select value={metric} onChange={(e) => setMetric(e.target.value)}>
-            {Object.entries(METRICS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          <select value={effMetric} onChange={(e) => setMetric(e.target.value)}>
+            {Object.entries(metricOptions).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
       </div>
@@ -165,7 +175,7 @@ export default function Progress() {
               contentStyle={{ background: "#000", border: "1px solid #fff", borderRadius: 0 }}
               labelStyle={{ color: "#9a9a9a" }}
               labelFormatter={formatDate}
-              formatter={(v, name) => [v, name === "goalPath" ? "Required path" : METRICS[metric]]}
+              formatter={(v, name) => [v, name === "goalPath" ? "Required path" : metricOptions[effMetric]]}
               position={{ y: 10 }}
               isAnimationActive={false}
             />
@@ -203,7 +213,7 @@ export default function Progress() {
         </ResponsiveContainer>
       </div>
 
-      <div className="section">
+      {!isCardio && <div className="section">
         <div className="section-title">
           Goal — {selected}
           {goal && (
@@ -242,12 +252,12 @@ export default function Progress() {
           <button className="shrink" type="submit">{goal ? "Update" : "Set goal"}</button>
         </form>
         {error && <div className="error">✳ {error}</div>}
-      </div>
+      </div>}
 
       <p className="muted" style={{ fontSize: "0.8rem" }}>
-        ✳ Estimated 1RM uses the Epley formula (weight × (1 + reps/30)) so sets with
-        different rep counts compare fairly. Volume is total reps × weight per workout.
-        Goals track your top set weight.
+        {isCardio
+          ? "✳ Total minutes sums all cardio entries per day; max incline is the steepest logged that day."
+          : "✳ Estimated 1RM uses the Epley formula (weight × (1 + reps/30)) so sets with different rep counts compare fairly. Volume is total reps × weight per workout. Goals track your top set weight."}
       </p>
     </div>
   );
