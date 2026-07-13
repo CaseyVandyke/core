@@ -70,6 +70,15 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_sets_exercise ON sets (exercise_id);
 `);
 
+// Additive migrations for databases created before these columns existed
+const setCols = db.prepare("PRAGMA table_info(sets)").all().map((c) => c.name);
+if (!setCols.includes("minutes")) db.exec("ALTER TABLE sets ADD COLUMN minutes REAL");
+if (!setCols.includes("incline")) db.exec("ALTER TABLE sets ADD COLUMN incline REAL");
+const exCols = db.prepare("PRAGMA table_info(exercises)").all().map((c) => c.name);
+if (!exCols.includes("kind")) {
+  db.exec("ALTER TABLE exercises ADD COLUMN kind TEXT NOT NULL DEFAULT 'strength'");
+}
+
 // Global starter exercises (user_id NULL = available to everyone)
 const seedExercises = [
   "Bench Press", "Incline Bench Press", "Overhead Press", "Squat",
@@ -79,10 +88,13 @@ const seedExercises = [
   "Leg Extension", "Calf Raise", "Lateral Raise", "Face Pull",
   "Hip Thrust", "Cable Fly", "Push Up",
 ];
+const seedCardio = ["Run", "Walk", "Hike", "Cycling"];
+
 const insertSeed = db.prepare(
-  "INSERT OR IGNORE INTO exercises (user_id, name) VALUES (NULL, ?)"
+  "INSERT OR IGNORE INTO exercises (user_id, name, kind) VALUES (NULL, ?, ?)"
 );
 const seedAll = db.transaction(() => {
-  for (const name of seedExercises) insertSeed.run(name);
+  for (const name of seedExercises) insertSeed.run(name, "strength");
+  for (const name of seedCardio) insertSeed.run(name, "cardio");
 });
 seedAll();

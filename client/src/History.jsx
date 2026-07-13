@@ -50,7 +50,7 @@ export default function History({ workouts, onChanged }) {
               <span className={isOpen ? "star" : "muted"}>{isOpen ? "▾" : "▸"}</span>
               <b>{formatDate(date)}</b>
               <span className="muted">
-                {dayWorkouts.length > 1 ? `${dayWorkouts.length} workouts · ` : ""}{totalSets} sets
+                {dayWorkouts.length} {dayWorkouts.length === 1 ? "workout" : "workouts"} · {totalSets} sets
               </span>
             </div>
             {isOpen && dayWorkouts.map((w) => (

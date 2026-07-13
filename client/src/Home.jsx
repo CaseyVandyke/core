@@ -124,12 +124,17 @@ function daysSince(dateStr) {
 }
 
 // Collapse consecutive sets of the same exercise at the same weight into
-// one row: "Deadlift | 4 | 12 | 315", or "12, 10, 8" when reps differ
+// one row: "Deadlift | 4 | 12 | 315", or "12, 10, 8" when reps differ.
+// Cardio entries (minutes set) stay one row each: "Run | — | 30 min | incline 2"
 function groupSets(sets) {
   const groups = [];
   for (const s of sets) {
+    if (s.minutes != null) {
+      groups.push({ key: s.id, exercise: s.exercise, cardio: true, minutes: s.minutes, incline: s.incline });
+      continue;
+    }
     const last = groups[groups.length - 1];
-    if (last && last.exercise === s.exercise && last.weight === s.weight) {
+    if (last && !last.cardio && last.exercise === s.exercise && last.weight === s.weight) {
       last.reps.push(s.reps);
     } else {
       groups.push({ key: s.id, exercise: s.exercise, weight: s.weight, reps: [s.reps] });
@@ -142,15 +147,15 @@ export function SetTable({ sets }) {
   return (
     <table>
       <thead>
-        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Weight / Incline</th></tr>
       </thead>
       <tbody>
         {groupSets(sets).map((g) => (
           <tr key={g.key}>
             <td>{g.exercise}</td>
-            <td>{g.reps.length}</td>
-            <td>{new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", ")}</td>
-            <td>{g.weight}</td>
+            <td>{g.cardio ? "—" : g.reps.length}</td>
+            <td>{g.cardio ? `${g.minutes} min` : (new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", "))}</td>
+            <td>{g.cardio ? (g.incline ? `incline ${g.incline}` : "—") : g.weight}</td>
           </tr>
         ))}
       </tbody>

@@ -71,17 +71,19 @@ app.get("/api/me", (req, res) => {
 
 app.get("/api/exercises", requireAuth, (req, res) => {
   const rows = db.prepare(
-    "SELECT id, name, user_id FROM exercises WHERE user_id IS NULL OR user_id = ? ORDER BY name"
+    "SELECT id, name, kind, user_id FROM exercises WHERE user_id IS NULL OR user_id = ? ORDER BY name"
   ).all(req.session.userId);
   res.json(rows);
 });
 
 app.post("/api/exercises", requireAuth, (req, res) => {
   const name = (req.body?.name || "").trim();
+  const kind = req.body?.kind === "cardio" ? "cardio" : "strength";
   if (!name) return res.status(400).json({ error: "name required" });
   try {
-    const info = db.prepare("INSERT INTO exercises (user_id, name) VALUES (?, ?)").run(req.session.userId, name);
-    res.json({ id: info.lastInsertRowid, name });
+    const info = db.prepare("INSERT INTO exercises (user_id, name, kind) VALUES (?, ?, ?)")
+      .run(req.session.userId, name, kind);
+    res.json({ id: info.lastInsertRowid, name, kind });
   } catch (e) {
     if (String(e).includes("UNIQUE")) return res.status(409).json({ error: "exercise already exists" });
     throw e;
@@ -97,7 +99,8 @@ app.get("/api/workouts", requireAuth, (req, res) => {
     "SELECT id, date, notes FROM workouts WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 200"
   ).all(req.session.userId);
   const setStmt = db.prepare(`
-    SELECT s.id, s.exercise_id, e.name AS exercise, s.set_number, s.reps, s.weight
+    SELECT s.id, s.exercise_id, e.name AS exercise, s.set_number, s.reps, s.weight,
+           s.minutes, s.incline
     FROM sets s JOIN exercises e ON e.id = s.exercise_id
     WHERE s.workout_id = ? ORDER BY s.id
   `);
@@ -110,8 +113,14 @@ app.post("/api/workouts", requireAuth, (req, res) => {
     return res.status(400).json({ error: "at least one set required" });
   }
   for (const s of sets) {
-    if (!s.exercise_id || !(s.reps > 0) || !(s.weight >= 0)) {
-      return res.status(400).json({ error: "each set needs exercise_id, reps > 0, weight >= 0" });
+    if (!s.exercise_id) return res.status(400).json({ error: "each set needs an exercise_id" });
+    if (s.minutes != null) {
+      // cardio entry: duration required, incline optional
+      if (!(s.minutes > 0) || (s.incline != null && !(s.incline >= 0))) {
+        return res.status(400).json({ error: "cardio needs minutes > 0 and incline >= 0" });
+      }
+    } else if (!(s.reps > 0) || !(s.weight >= 0)) {
+      return res.status(400).json({ error: "each set needs reps > 0 and weight >= 0" });
     }
   }
   const create = db.transaction(() => {
@@ -120,14 +129,21 @@ app.post("/api/workouts", requireAuth, (req, res) => {
     ).run(req.session.userId, date || null, notes);
     const workoutId = info.lastInsertRowid;
     const insertSet = db.prepare(
-      "INSERT INTO sets (workout_id, exercise_id, set_number, reps, weight) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO sets (workout_id, exercise_id, set_number, reps, weight, minutes, incline) VALUES (?, ?, ?, ?, ?, ?, ?)"
     );
     // set_number counts per exercise within the workout
     const counters = new Map();
     for (const s of sets) {
       const n = (counters.get(s.exercise_id) || 0) + 1;
       counters.set(s.exercise_id, n);
-      insertSet.run(workoutId, s.exercise_id, n, s.reps, s.weight);
+      const cardio = s.minutes != null;
+      insertSet.run(
+        workoutId, s.exercise_id, n,
+        cardio ? 0 : s.reps,
+        cardio ? 0 : s.weight,
+        cardio ? s.minutes : null,
+        cardio ? (s.incline ?? 0) : null
+      );
     }
     return workoutId;
   });
@@ -155,7 +171,7 @@ app.get("/api/progress", requireAuth, (req, res) => {
     FROM sets s
     JOIN workouts w ON w.id = s.workout_id
     JOIN exercises e ON e.id = s.exercise_id
-    WHERE w.user_id = ?
+    WHERE w.user_id = ? AND s.minutes IS NULL
     GROUP BY e.id, w.date
     ORDER BY w.date
   `).all(req.session.userId);
