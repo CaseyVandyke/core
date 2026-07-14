@@ -12,9 +12,20 @@
   --muted: #9a9a9a;
   --accent: #fb4b00;
   --accent2: #1a6aff;
-  --hairline: 1px solid #ffffff;
+  --line: rgba(255, 255, 255, 0.25);
+  --cell: #1c1c1c;
+  --hairline: 1px solid var(--text);
   --mono: "Departure Mono", "Menlo", monospace;
   --display: "Arial Black", "Helvetica Neue", sans-serif;
+}
+
+/* Light mode: same accents, inverted canvas */
+body.light {
+  --bg: #ffffff;
+  --text: #000000;
+  --muted: #6f6f6f;
+  --line: rgba(0, 0, 0, 0.3);
+  --cell: #e8e8e8;
 }
 
 * { box-sizing: border-box; }
@@ -72,6 +83,7 @@ nav .brand.active { border-bottom: 2px solid var(--accent); }
 nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 nav .spacer { flex: 1; }
 nav .user { color: var(--muted); }
+nav .mode-toggle { font-size: 1.2rem; line-height: 1; }
 
 /* Forms */
 label { display: block; color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; margin: 1rem 0 0.25rem; }
@@ -120,7 +132,7 @@ button.small { padding: 0.2rem 0.6rem; font-size: 0.75rem; }
 /* Tables */
 table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
 th { color: var(--muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; text-align: left; }
-th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.25); }
+th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid var(--line); }
 
 /* Workout set tables: fixed column widths so every table lines up the
    same way everywhere (history, home, day lightbox) */
@@ -134,7 +146,7 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 /* Cardio section within a workout */
 .kind-label { color: var(--muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; margin-top: 0.9rem; }
 .cardio-list { list-style: none; padding: 0; margin: 0.25rem 0 0; }
-.cardio-list li { padding: 0.4rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.25); }
+.cardio-list li { padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
 .cardio-marker { color: var(--accent2); }
 
 /* Cards / sections */
@@ -240,16 +252,16 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 }
 
 /* Training calendar heatmap */
-.cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--accent) #1c1c1c; }
+.cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--accent) var(--cell); }
 .cal::-webkit-scrollbar { height: 5px; }
-.cal::-webkit-scrollbar-track { background: #1c1c1c; }
+.cal::-webkit-scrollbar-track { background: var(--cell); }
 .cal::-webkit-scrollbar-thumb { background: var(--accent); }
 .cal-hint { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
 .cal-legend { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; }
 .cal-legend .cal-cell { display: inline-block; width: 10px; height: 10px; }
 .cal-col { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .cal-month { height: 14px; font-size: 9px; color: var(--muted); white-space: nowrap; }
-.cal-cell { width: 17px; height: 17px; background: #1c1c1c; }
+.cal-cell { width: 17px; height: 17px; background: var(--cell); }
 .cal-cell.on-str, .cal-cell.on-car, .cal-cell.on-mix { cursor: pointer; }
 .cal-cell.on-str { background: var(--accent); }
 .cal-cell.on-car { background: var(--accent2); }
@@ -267,7 +279,7 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 }
 .day-header:hover b { color: var(--accent); }
 .day-header .muted { margin-left: auto; font-size: 0.8rem; }
-.day-workout { padding: 0.5rem 1.25rem 1rem; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+.day-workout { padding: 0.5rem 1.25rem 1rem; border-top: 1px solid var(--line); }
 
 /* Dropdown (compare-lifts picker) */
 .dropdown { position: relative; }

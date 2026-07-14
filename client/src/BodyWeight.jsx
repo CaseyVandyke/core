@@ -4,6 +4,7 @@ import {
 } from "recharts";
 import { api } from "./api.js";
 import { formatDate, shortDate } from "./dates.js";
+import { chartTheme } from "./theme.js";
 
 const today = () => new Date().toLocaleDateString("en-CA");
 
@@ -33,6 +34,8 @@ export default function BodyWeight() {
     await api.deleteBodyweight(id);
     load();
   }
+
+  const ct = chartTheme();
 
   if (!entries) return <div className="container"><p className="muted">Loading…</p></div>;
 
@@ -75,18 +78,18 @@ export default function BodyWeight() {
             <div className="section" style={{ padding: "1.5rem 0.5rem" }}>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={entries} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.15)" />
-                  <XAxis dataKey="date" stroke="#9a9a9a" tick={{ fontSize: 12 }} tickFormatter={shortDate} />
-                  <YAxis stroke="#9a9a9a" tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
+                  <CartesianGrid stroke={ct.grid} />
+                  <XAxis dataKey="date" stroke={ct.axis} tick={{ fontSize: 12 }} tickFormatter={shortDate} />
+                  <YAxis stroke={ct.axis} tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
                   <Tooltip
-                    contentStyle={{ background: "#000", border: "1px solid #fff", borderRadius: 0 }}
-                    labelStyle={{ color: "#9a9a9a" }}
+                    contentStyle={{ background: ct.panelBg, border: `1px solid ${ct.panelLine}`, borderRadius: 0 }}
+                    labelStyle={{ color: ct.axis }}
                     labelFormatter={formatDate}
                     formatter={(v) => [v, "Weight"]}
                     position={{ y: 10 }}
                     isAnimationActive={false}
                   />
-                  <Line type="monotone" dataKey="weight" stroke="#1a6aff" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="weight" stroke={ct.cardio} strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

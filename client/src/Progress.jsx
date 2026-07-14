@@ -4,6 +4,7 @@ import {
 } from "recharts";
 import { api } from "./api.js";
 import { formatDate, shortDate } from "./dates.js";
+import { chartTheme } from "./theme.js";
 
 const STRENGTH_METRICS = {
   top_weight: "Top set weight",
@@ -93,6 +94,8 @@ export default function Progress() {
     };
   }, [series, showGoal, goal]);
 
+  const ct = chartTheme();
+
   if (!rows) return <div className="container"><p className="muted">Loading…</p></div>;
 
   if (rows.length === 0) {
@@ -168,12 +171,12 @@ export default function Progress() {
       <div className="section" style={{ padding: "1.5rem 0.5rem" }}>
         <ResponsiveContainer width="100%" height={420}>
           <LineChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.15)" />
-            <XAxis dataKey="date" stroke="#9a9a9a" tick={{ fontSize: 12 }} tickFormatter={shortDate} />
-            <YAxis stroke="#9a9a9a" tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
+            <CartesianGrid stroke={ct.grid} />
+            <XAxis dataKey="date" stroke={ct.axis} tick={{ fontSize: 12 }} tickFormatter={shortDate} />
+            <YAxis stroke={ct.axis} tick={{ fontSize: 12 }} domain={["auto", "auto"]} />
             <Tooltip
-              contentStyle={{ background: "#000", border: "1px solid #fff", borderRadius: 0 }}
-              labelStyle={{ color: "#9a9a9a" }}
+              contentStyle={{ background: ct.panelBg, border: `1px solid ${ct.panelLine}`, borderRadius: 0 }}
+              labelStyle={{ color: ct.axis }}
               labelFormatter={formatDate}
               formatter={(v, name) => [v, name === "goalPath" ? "Required path" : metricOptions[effMetric]]}
               position={{ y: 10 }}
@@ -183,7 +186,7 @@ export default function Progress() {
               type="monotone"
               dataKey="value"
               name={selected}
-              stroke={isCardio ? "#1a6aff" : "#fb4b00"}
+              stroke={isCardio ? ct.cardio : ct.strength}
               strokeWidth={2}
               dot={{ r: 3 }}
               connectNulls
@@ -192,7 +195,7 @@ export default function Progress() {
               <Line
                 type="linear"
                 dataKey="goalPath"
-                stroke="#ffffff"
+                stroke={ct.panelLine}
                 strokeWidth={1.5}
                 strokeDasharray="6 4"
                 dot={false}
@@ -204,8 +207,8 @@ export default function Progress() {
                 x={goal.target_date}
                 y={goal.target_weight}
                 r={6}
-                fill="#000"
-                stroke="#ffffff"
+                fill={ct.panelBg}
+                stroke={ct.panelLine}
                 strokeWidth={2}
               />
             )}

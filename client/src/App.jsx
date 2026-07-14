@@ -24,6 +24,12 @@ export default function App() {
   const [page, setPage] = useState("home");
   const [exercises, setExercises] = useState([]);
   const [workouts, setWorkouts] = useState([]);
+  const [theme, setTheme] = useState(() => localStorage.getItem("core.theme") || "dark");
+
+  useEffect(() => {
+    document.body.classList.toggle("light", theme === "light");
+    localStorage.setItem("core.theme", theme);
+  }, [theme]);
 
   const reload = useCallback(async () => {
     const [ex, wo] = await Promise.all([api.exercises(), api.workouts()]);
@@ -59,6 +65,13 @@ export default function App() {
           </a>
         ))}
         <span className="spacer" />
+        <a
+          className="mode-toggle"
+          title={theme === "dark" ? "light mode" : "dark mode"}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? "☀︎" : "☾"}
+        </a>
         <span className="user">{user.username}</span>
         <a onClick={logout}>Log out</a>
       </nav>
