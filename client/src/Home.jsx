@@ -181,7 +181,7 @@ function groupSets(sets) {
 
 export function SetTable({ sets }) {
   return (
-    <table>
+    <table className="set-table">
       <thead>
         <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Weight / Incline</th></tr>
       </thead>

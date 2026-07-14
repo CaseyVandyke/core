@@ -118,6 +118,15 @@ table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
 th { color: var(--muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em; text-align: left; }
 th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.25); }
 
+/* Workout set tables: fixed column widths so every table lines up the
+   same way everywhere (history, home, day lightbox) */
+.set-table { table-layout: fixed; }
+.set-table th:nth-child(1) { width: 38%; }
+.set-table th:nth-child(2) { width: 14%; }
+.set-table th:nth-child(3) { width: 24%; }
+.set-table th:nth-child(4) { width: 24%; }
+.set-table td { overflow-wrap: break-word; }
+
 /* Cards / sections */
 .section { border: var(--hairline); padding: 1rem 1.25rem; margin-top: 1.5rem; }
 .section-title { color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; border-bottom: var(--hairline); padding-bottom: 0.4rem; margin-bottom: 0.75rem; }
