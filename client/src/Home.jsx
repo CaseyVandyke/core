@@ -140,14 +140,14 @@ function TrainingCalendar({ workouts }) {
 
       {selectedDay && (
         <Modal onClose={() => setSelectedDay(null)}>
-          <h3><span className="star">✳</span> {formatDate(selectedDay)}</h3>
-          {dayWorkouts.map((w) => (
-            <div key={w.id} style={{ marginBottom: "1rem" }}>
-              {w.notes && <div className="muted">{w.notes}</div>}
-              <SetTable sets={w.sets} />
+          <h3><span className="star">{"✳︎"}</span> {formatDate(selectedDay)}</h3>
+          {dayWorkouts.some((w) => w.notes) && (
+            <div className="muted">
+              {dayWorkouts.filter((w) => w.notes).map((w) => w.notes).join(" · ")}
             </div>
-          ))}
-          <button onClick={() => setSelectedDay(null)}>Close</button>
+          )}
+          <SetTable sets={dayWorkouts.flatMap((w) => w.sets)} />
+          <button style={{ marginTop: "1rem" }} onClick={() => setSelectedDay(null)}>Close</button>
         </Modal>
       )}
     </div>
@@ -183,7 +183,7 @@ export function SetTable({ sets }) {
   return (
     <table className="set-table">
       <thead>
-        <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Weight / Incline</th></tr>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr>
       </thead>
       <tbody>
         {groupSets(sets).map((g) => (

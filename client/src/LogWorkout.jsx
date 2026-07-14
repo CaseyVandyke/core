@@ -227,7 +227,7 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
 
       {saved && (
         <Modal onClose={() => setSaved(false)}>
-          <h3><span className="star">✳</span> Workout saved</h3>
+          <h3><span className="star">{"✳︎"}</span> Workout saved</h3>
           <p className="muted">The form is reset and ready for the next one.</p>
           <div className="row">
             <button className="primary" onClick={() => onNavigate("history")}>View history</button>
