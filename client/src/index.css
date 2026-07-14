@@ -32,7 +32,7 @@ body.light {
   /* bright orange fails WCAG contrast on white (~3.4:1); blue leads
      in light mode, with a darkened orange (~5:1) as the second accent */
   --accent: #1a6aff;
-  --accent2: #c94000;
+  --accent2: #e04a00;
 }
 
 * { box-sizing: border-box; }

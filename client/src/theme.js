@@ -9,6 +9,6 @@ export function chartTheme() {
     panelLine: light ? "#000000" : "#ffffff",
     // mirrors --accent / --accent2: orange leads in dark, blue in light
     strength: light ? "#1a6aff" : "#fb4b00",
-    cardio: light ? "#c94000" : "#1a6aff",
+    cardio: light ? "#e04a00" : "#1a6aff",
   };
 }
