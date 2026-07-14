@@ -19,13 +19,16 @@
   --display: "Arial Black", "Helvetica Neue", sans-serif;
 }
 
-/* Light mode: same accents, inverted canvas */
+/* Light mode: same accents, inverted canvas.
+   --hairline must be redeclared here: it resolves var(--text) where
+   it's defined, so the :root copy is baked to white. */
 body.light {
   --bg: #ffffff;
   --text: #000000;
   --muted: #6f6f6f;
   --line: rgba(0, 0, 0, 0.3);
   --cell: #e8e8e8;
+  --hairline: 1px solid var(--text);
 }
 
 * { box-sizing: border-box; }
@@ -83,7 +86,7 @@ nav .brand.active { border-bottom: 2px solid var(--accent); }
 nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 nav .spacer { flex: 1; }
 nav .user { color: var(--muted); }
-nav .mode-toggle { font-size: 1.2rem; line-height: 1; }
+nav .mode-toggle { font-size: 1.7rem; line-height: 1; }
 
 /* Forms */
 label { display: block; color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; margin: 1rem 0 0.25rem; }
