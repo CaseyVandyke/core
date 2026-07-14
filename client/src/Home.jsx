@@ -160,17 +160,12 @@ function daysSince(dateStr) {
 }
 
 // Collapse consecutive sets of the same exercise at the same weight into
-// one row: "Deadlift | 4 | 12 | 315", or "12, 10, 8" when reps differ.
-// Cardio entries (minutes set) stay one row each: "Run | — | 30 min | incline 2"
+// one row: "Deadlift | 4 | 12 | 315", or "12, 10, 8" when reps differ
 function groupSets(sets) {
   const groups = [];
   for (const s of sets) {
-    if (s.minutes != null) {
-      groups.push({ key: s.id, exercise: s.exercise, cardio: true, minutes: s.minutes, incline: s.incline });
-      continue;
-    }
     const last = groups[groups.length - 1];
-    if (last && !last.cardio && last.exercise === s.exercise && last.weight === s.weight) {
+    if (last && last.exercise === s.exercise && last.weight === s.weight) {
       last.reps.push(s.reps);
     } else {
       groups.push({ key: s.id, exercise: s.exercise, weight: s.weight, reps: [s.reps] });
@@ -179,30 +174,44 @@ function groupSets(sets) {
   return groups;
 }
 
+// Lifts get a strict aligned table; cardio gets its own list — the two
+// data shapes never share columns
 export function SetTable({ sets }) {
+  const strength = groupSets(sets.filter((s) => s.minutes == null));
+  const cardio = sets.filter((s) => s.minutes != null);
+  const both = strength.length > 0 && cardio.length > 0;
+
   return (
-    <table className="set-table">
-      <thead>
-        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr>
-      </thead>
-      <tbody>
-        {groupSets(sets).map((g) => (
-          g.cardio ? (
-            // cardio doesn't fit sets/reps/weight columns; free-form line
-            <tr key={g.key}>
-              <td>{g.exercise}</td>
-              <td colSpan={3}>{g.minutes} min{g.incline ? ` · incline ${g.incline}` : ""}</td>
-            </tr>
-          ) : (
-            <tr key={g.key}>
-              <td>{g.exercise}</td>
-              <td>{g.reps.length}</td>
-              <td>{new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", ")}</td>
-              <td>{g.weight}</td>
-            </tr>
-          )
-        ))}
-      </tbody>
-    </table>
+    <>
+      {both && <div className="kind-label">Lifts</div>}
+      {strength.length > 0 && (
+        <table className="set-table">
+          <thead>
+            <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th></tr>
+          </thead>
+          <tbody>
+            {strength.map((g) => (
+              <tr key={g.key}>
+                <td>{g.exercise}</td>
+                <td>{g.reps.length}</td>
+                <td>{new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", ")}</td>
+                <td>{g.weight}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {both && <div className="kind-label">Cardio</div>}
+      {cardio.length > 0 && (
+        <ul className="cardio-list">
+          {cardio.map((s) => (
+            <li key={s.id}>
+              <span className="cardio-marker">▸</span> {s.exercise} — {s.minutes} min
+              {s.incline ? ` · incline ${s.incline}` : ""}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
