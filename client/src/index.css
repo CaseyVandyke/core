@@ -29,6 +29,10 @@ body.light {
   --line: rgba(0, 0, 0, 0.3);
   --cell: #e8e8e8;
   --hairline: 1px solid var(--text);
+  /* bright orange fails WCAG contrast on white (~3.4:1); blue leads
+     in light mode, with a darkened orange (~5:1) as the second accent */
+  --accent: #1a6aff;
+  --accent2: #c94000;
 }
 
 * { box-sizing: border-box; }

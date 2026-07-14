@@ -7,7 +7,8 @@ export function chartTheme() {
     grid: light ? "rgba(0, 0, 0, 0.15)" : "rgba(255, 255, 255, 0.15)",
     panelBg: light ? "#ffffff" : "#000000",
     panelLine: light ? "#000000" : "#ffffff",
-    strength: "#fb4b00",
-    cardio: "#1a6aff",
+    // mirrors --accent / --accent2: orange leads in dark, blue in light
+    strength: light ? "#1a6aff" : "#fb4b00",
+    cardio: light ? "#c94000" : "#1a6aff",
   };
 }
