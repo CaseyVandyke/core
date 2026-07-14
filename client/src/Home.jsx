@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { formatDate } from "./dates.js";
+import Modal from "./Modal.jsx";
 
 export default function Home({ workouts, onNavigate }) {
   const totalSets = workouts.reduce((n, w) => n + w.sets.length, 0);
@@ -138,18 +139,16 @@ function TrainingCalendar({ workouts }) {
       </div>
 
       {selectedDay && (
-        <div className="modal-backdrop" onClick={() => setSelectedDay(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3><span className="star">✳</span> {formatDate(selectedDay)}</h3>
-            {dayWorkouts.map((w) => (
-              <div key={w.id} style={{ marginBottom: "1rem" }}>
-                {w.notes && <div className="muted">{w.notes}</div>}
-                <SetTable sets={w.sets} />
-              </div>
-            ))}
-            <button onClick={() => setSelectedDay(null)}>Close</button>
-          </div>
-        </div>
+        <Modal onClose={() => setSelectedDay(null)}>
+          <h3><span className="star">✳</span> {formatDate(selectedDay)}</h3>
+          {dayWorkouts.map((w) => (
+            <div key={w.id} style={{ marginBottom: "1rem" }}>
+              {w.notes && <div className="muted">{w.notes}</div>}
+              <SetTable sets={w.sets} />
+            </div>
+          ))}
+          <button onClick={() => setSelectedDay(null)}>Close</button>
+        </Modal>
       )}
     </div>
   );

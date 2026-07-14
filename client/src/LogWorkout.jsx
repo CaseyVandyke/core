@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
+import Modal from "./Modal.jsx";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -225,31 +226,27 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
       )}
 
       {saved && (
-        <div className="modal-backdrop" onClick={() => setSaved(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3><span className="star">✳</span> Workout saved</h3>
-            <p className="muted">The form is reset and ready for the next one.</p>
-            <div className="row">
-              <button className="primary" onClick={() => onNavigate("history")}>View history</button>
-              <button onClick={() => { setSaved(false); startTimer(); setTimerOpen(true); }}>
-                Keep logging
-              </button>
-            </div>
+        <Modal onClose={() => setSaved(false)}>
+          <h3><span className="star">✳</span> Workout saved</h3>
+          <p className="muted">The form is reset and ready for the next one.</p>
+          <div className="row">
+            <button className="primary" onClick={() => onNavigate("history")}>View history</button>
+            <button onClick={() => { setSaved(false); startTimer(); setTimerOpen(true); }}>
+              Keep logging
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {timerOpen && restSecs !== null && (
-        <div className="modal-backdrop" onClick={() => setTimerOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="section-title">Rest timer</div>
-            <div className="timer-big">{mmss(restSecs)}</div>
-            <div className="row">
-              <button onClick={startTimer}>Restart</button>
-              <button className="primary" onClick={() => setTimerOpen(false)}>Back to logging</button>
-            </div>
+        <Modal onClose={() => setTimerOpen(false)}>
+          <div className="section-title">Rest timer</div>
+          <div className="timer-big">{mmss(restSecs)}</div>
+          <div className="row">
+            <button onClick={startTimer}>Restart</button>
+            <button className="primary" onClick={() => setTimerOpen(false)}>Back to logging</button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {error && <div className="error">✳ {error}</div>}
