@@ -64,7 +64,11 @@ nav {
   z-index: 100;
 }
 nav .brand { color: var(--accent); font-family: var(--display); font-weight: 900; font-size: 1.3rem; cursor: pointer; }
-nav .brand:hover { color: var(--accent2); }
+nav .brand.active { border-bottom: 2px solid var(--accent); }
+/* hover accents only on devices that actually hover (not touch) */
+@media (hover: hover) {
+  nav .brand:hover { color: var(--accent2); }
+}
 nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 nav .spacer { flex: 1; }
 nav .user { color: var(--muted); }

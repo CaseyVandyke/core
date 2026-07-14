@@ -7,7 +7,8 @@ import History from "./History.jsx";
 import Progress from "./Progress.jsx";
 import BodyWeight from "./BodyWeight.jsx";
 
-const PAGES = { home: "Home", log: "Log", history: "History", progress: "Progress", weight: "Weight" };
+// "home" is reached via the CORE logo, not a nav tab
+const NAV_PAGES = { log: "Log", history: "History", progress: "Progress", weight: "Weight" };
 
 export default function App() {
   const [user, setUser] = useState(undefined); // undefined = still checking
@@ -42,8 +43,8 @@ export default function App() {
   return (
     <>
       <nav>
-        <a className="brand" onClick={() => setPage("home")}>CORE</a>
-        {Object.entries(PAGES).map(([key, title]) => (
+        <a className={`brand ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>CORE</a>
+        {Object.entries(NAV_PAGES).map(([key, title]) => (
           <a key={key} className={page === key ? "active" : ""} onClick={() => setPage(key)}>
             {title}
           </a>
