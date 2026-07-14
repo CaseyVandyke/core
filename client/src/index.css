@@ -11,6 +11,7 @@
   --text: #ffffff;
   --muted: #9a9a9a;
   --accent: #fb4b00;
+  --accent2: #1a6aff;
   --hairline: 1px solid #ffffff;
   --mono: "Departure Mono", "Menlo", monospace;
   --display: "Arial Black", "Helvetica Neue", sans-serif;
@@ -189,11 +190,15 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 .cal::-webkit-scrollbar { height: 5px; }
 .cal::-webkit-scrollbar-track { background: #1c1c1c; }
 .cal::-webkit-scrollbar-thumb { background: var(--accent); }
-.cal-hint { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.4rem; }
+.cal-hint { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.cal-legend { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; }
+.cal-legend .cal-cell { display: inline-block; width: 10px; height: 10px; }
 .cal-col { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
 .cal-month { height: 14px; font-size: 9px; color: var(--muted); white-space: nowrap; }
 .cal-cell { width: 13px; height: 13px; background: #1c1c1c; }
-.cal-cell.on { background: var(--accent); }
+.cal-cell.on-str { background: var(--accent); }
+.cal-cell.on-car { background: var(--accent2); }
+.cal-cell.on-mix { background: linear-gradient(135deg, var(--accent) 50%, var(--accent2) 50%); }
 .cal-cell.future { background: transparent; }
 
 /* History: collapsible day groups */

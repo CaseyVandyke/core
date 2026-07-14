@@ -50,9 +50,16 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 // GitHub-style heatmap of the last 26 weeks: one column per week,
 // one orange cell per day trained
 function TrainingCalendar({ workouts }) {
-  const setsByDate = new Map();
+  // per date: set count + whether the day had strength work, cardio, or both
+  const byDate = new Map();
   for (const w of workouts) {
-    setsByDate.set(w.date, (setsByDate.get(w.date) || 0) + w.sets.length);
+    const day = byDate.get(w.date) || { sets: 0, strength: false, cardio: false };
+    day.sets += w.sets.length;
+    for (const s of w.sets) {
+      if (s.minutes != null) day.cardio = true;
+      else day.strength = true;
+    }
+    byDate.set(w.date, day);
   }
 
   const today = new Date();
@@ -66,9 +73,12 @@ function TrainingCalendar({ workouts }) {
   while (cursor <= end) {
     const week = [];
     for (let i = 0; i < 7; i++) {
+      const iso = cursor.toLocaleDateString("en-CA");
+      const day = byDate.get(iso);
       week.push({
-        iso: cursor.toLocaleDateString("en-CA"),
-        sets: setsByDate.get(cursor.toLocaleDateString("en-CA")) || 0,
+        iso,
+        sets: day?.sets || 0,
+        kind: day ? (day.strength && day.cardio ? "mix" : day.cardio ? "car" : "str") : null,
         future: cursor > today,
         firstOfMonth: cursor.getDate() === 1,
         month: cursor.getMonth(),
@@ -78,7 +88,7 @@ function TrainingCalendar({ workouts }) {
     weeks.push(week);
   }
 
-  const trainedDays = setsByDate.size;
+  const trainedDays = byDate.size;
 
   // The grid is wider than a phone; start scrolled to the recent end.
   // Re-snap after the web font loads, since it changes the grid width.
@@ -106,14 +116,21 @@ function TrainingCalendar({ workouts }) {
                 <div
                   key={c.iso}
                   title={c.future ? "" : `${c.iso}${c.sets ? ` — ${c.sets} sets` : ""}`}
-                  className={`cal-cell${c.sets ? " on" : ""}${c.future ? " future" : ""}`}
+                  className={`cal-cell${c.kind ? ` on-${c.kind}` : ""}${c.future ? " future" : ""}`}
                 />
               ))}
             </div>
           );
         })}
       </div>
-      <div className="cal-hint">◂ swipe for earlier months</div>
+      <div className="cal-hint">
+        ◂ swipe for earlier months
+        <span className="cal-legend">
+          <i className="cal-cell on-str" /> strength
+          <i className="cal-cell on-car" /> cardio
+          <i className="cal-cell on-mix" /> both
+        </span>
+      </div>
     </div>
   );
 }
