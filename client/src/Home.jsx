@@ -187,12 +187,20 @@ export function SetTable({ sets }) {
       </thead>
       <tbody>
         {groupSets(sets).map((g) => (
-          <tr key={g.key}>
-            <td>{g.exercise}</td>
-            <td>{g.cardio ? "—" : g.reps.length}</td>
-            <td>{g.cardio ? `${g.minutes} min` : (new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", "))}</td>
-            <td>{g.cardio ? (g.incline ? `incline ${g.incline}` : "—") : g.weight}</td>
-          </tr>
+          g.cardio ? (
+            // cardio doesn't fit sets/reps/weight columns; free-form line
+            <tr key={g.key}>
+              <td>{g.exercise}</td>
+              <td colSpan={3}>{g.minutes} min{g.incline ? ` · incline ${g.incline}` : ""}</td>
+            </tr>
+          ) : (
+            <tr key={g.key}>
+              <td>{g.exercise}</td>
+              <td>{g.reps.length}</td>
+              <td>{new Set(g.reps).size === 1 ? g.reps[0] : g.reps.join(", ")}</td>
+              <td>{g.weight}</td>
+            </tr>
+          )
         ))}
       </tbody>
     </table>
