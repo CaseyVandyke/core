@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatDate } from "./dates.js";
 
 export default function Home({ workouts, onNavigate }) {
@@ -90,6 +90,10 @@ function TrainingCalendar({ workouts }) {
 
   const trainedDays = byDate.size;
 
+  // tap a trained day to see what was done
+  const [selectedDay, setSelectedDay] = useState(null);
+  const dayWorkouts = selectedDay ? workouts.filter((w) => w.date === selectedDay) : [];
+
   // The grid is wider than a phone; start scrolled to the recent end.
   // Re-snap after the web font loads, since it changes the grid width.
   const calRef = useRef(null);
@@ -117,6 +121,7 @@ function TrainingCalendar({ workouts }) {
                   key={c.iso}
                   title={c.future ? "" : `${c.iso}${c.sets ? ` — ${c.sets} sets` : ""}`}
                   className={`cal-cell${c.kind ? ` on-${c.kind}` : ""}${c.future ? " future" : ""}`}
+                  onClick={c.kind ? () => setSelectedDay(c.iso) : undefined}
                 />
               ))}
             </div>
@@ -131,6 +136,21 @@ function TrainingCalendar({ workouts }) {
           <i className="cal-cell on-mix" /> both
         </span>
       </div>
+
+      {selectedDay && (
+        <div className="modal-backdrop" onClick={() => setSelectedDay(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3><span className="star">✳</span> {formatDate(selectedDay)}</h3>
+            {dayWorkouts.map((w) => (
+              <div key={w.id} style={{ marginBottom: "1rem" }}>
+                {w.notes && <div className="muted">{w.notes}</div>}
+                <SetTable sets={w.sets} />
+              </div>
+            ))}
+            <button onClick={() => setSelectedDay(null)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
