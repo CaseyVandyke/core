@@ -7,8 +7,17 @@ import History from "./History.jsx";
 import Progress from "./Progress.jsx";
 import BodyWeight from "./BodyWeight.jsx";
 
-// "home" is reached via the CORE logo, not a nav tab
+// "home" is reached via the CORE logo, not a nav tab (desktop top nav)
 const NAV_PAGES = { log: "Log", history: "History", progress: "Progress", weight: "Weight" };
+
+// Mobile bottom tab bar: key, icon, label
+const TABS = [
+  ["home", "⌂", "Home"],
+  ["log", "✚", "Log"],
+  ["history", "☰", "History"],
+  ["progress", "↗", "Progress"],
+  ["weight", "◉", "Weight"],
+];
 
 export default function App() {
   const [user, setUser] = useState(undefined); // undefined = still checking
@@ -45,7 +54,7 @@ export default function App() {
       <nav>
         <a className={`brand ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>CORE</a>
         {Object.entries(NAV_PAGES).map(([key, title]) => (
-          <a key={key} className={page === key ? "active" : ""} onClick={() => setPage(key)}>
+          <a key={key} className={`top-link ${page === key ? "active" : ""}`} onClick={() => setPage(key)}>
             {title}
           </a>
         ))}
@@ -66,6 +75,15 @@ export default function App() {
       {page === "history" && <History workouts={workouts} onChanged={reload} />}
       {page === "progress" && <Progress />}
       {page === "weight" && <BodyWeight />}
+
+      <div className="tabbar">
+        {TABS.map(([key, icon, label]) => (
+          <a key={key} className={page === key ? "active" : ""} onClick={() => setPage(key)}>
+            <span className="ico">{icon}</span>
+            {label}
+          </a>
+        ))}
+      </div>
     </>
   );
 }

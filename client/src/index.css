@@ -139,11 +139,43 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid rgba(255, 255
 .row > * { flex: 1; min-width: 90px; }
 .row > .shrink { flex: 0; min-width: auto; }
 
-/* On phones, wide fields take their own line; small numeric fields pair up */
+/* Mobile bottom tab bar (hidden on desktop) */
+.tabbar { display: none; }
+
+/* On phones: wide fields take their own line, nav links move to a
+   fixed bottom tab bar in thumb range */
 @media (max-width: 640px) {
   .row > .full-sm { flex-basis: 100%; min-width: 100%; }
   .row > * { min-width: 34%; }
   .row > .shrink { min-width: auto; }
+
+  nav .top-link { display: none; }
+
+  .tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: var(--bg);
+    border-top: var(--hairline);
+    z-index: 150;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tabbar a {
+    flex: 1;
+    text-align: center;
+    padding: 0.45rem 0 0.55rem;
+    color: var(--text);
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+  }
+  .tabbar a .ico { display: block; font-size: 1.15rem; line-height: 1.3; }
+  .tabbar a.active { color: var(--accent); }
+
+  /* keep page content clear of the fixed bar */
+  .container { padding-bottom: 7rem; }
 }
 
 /* Stat blocks on home page */
