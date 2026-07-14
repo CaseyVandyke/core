@@ -63,7 +63,8 @@ nav {
   background: var(--bg);
   z-index: 100;
 }
-nav .brand { color: var(--accent); font-family: var(--display); font-weight: 900; font-size: 1.3rem; }
+nav .brand { color: var(--accent); font-family: var(--display); font-weight: 900; font-size: 1.3rem; cursor: pointer; }
+nav .brand:hover { color: var(--accent2); }
 nav a.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 nav .spacer { flex: 1; }
 nav .user { color: var(--muted); }

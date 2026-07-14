@@ -42,7 +42,7 @@ export default function App() {
   return (
     <>
       <nav>
-        <span className="brand">CORE</span>
+        <a className="brand" onClick={() => setPage("home")}>CORE</a>
         {Object.entries(PAGES).map(([key, title]) => (
           <a key={key} className={page === key ? "active" : ""} onClick={() => setPage(key)}>
             {title}
