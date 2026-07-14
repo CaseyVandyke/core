@@ -183,7 +183,7 @@ export default function Progress() {
               type="monotone"
               dataKey="value"
               name={selected}
-              stroke="#fb4b00"
+              stroke={isCardio ? "#1a6aff" : "#fb4b00"}
               strokeWidth={2}
               dot={{ r: 3 }}
               connectNulls

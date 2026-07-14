@@ -26,7 +26,7 @@ export default function Home({ workouts, onNavigate }) {
       </div>
 
       <div className="row" style={{ marginTop: "1.5rem" }}>
-        <button className="primary shrink" onClick={() => onNavigate("log")}>
+        <button className="blue shrink" onClick={() => onNavigate("log")}>
           ✳ Log a workout
         </button>
         <button className="shrink" onClick={() => onNavigate("progress")}>

@@ -86,7 +86,7 @@ export default function BodyWeight() {
                     position={{ y: 10 }}
                     isAnimationActive={false}
                   />
-                  <Line type="monotone" dataKey="weight" stroke="#fb4b00" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="weight" stroke="#1a6aff" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
