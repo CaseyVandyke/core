@@ -1,10 +1,20 @@
-// Rest-alarm beep, synthesized with the Web Audio API (no audio files).
-// Browsers only allow sound after a user gesture, so unlockAudio() must
-// be called from a tap/click handler before beep() can make noise.
+// Rest-alarm sounds. Beep is synthesized with the Web Audio API; spoken
+// phrases use the browser's text-to-speech. Browsers only allow sound
+// after a user gesture, so unlockAudio() must be called from a tap/click
+// handler before either can make noise from a timer.
 
 let ctx;
-
 let speechUnlocked = false;
+
+// iOS loads voices lazily; ask early and cache when they arrive
+let voices = [];
+function loadVoices() {
+  if ("speechSynthesis" in window) voices = speechSynthesis.getVoices();
+}
+if ("speechSynthesis" in window) {
+  loadVoices();
+  speechSynthesis.addEventListener?.("voiceschanged", loadVoices);
+}
 
 export function unlockAudio() {
   if (!ctx) {
@@ -13,13 +23,15 @@ export function unlockAudio() {
   }
   if (ctx && ctx.state === "suspended") ctx.resume();
 
-  // iOS also gates text-to-speech behind a user gesture: speaking a
-  // silent utterance during a tap unlocks it for later timer-fired alarms
+  // iOS also gates text-to-speech behind a user gesture: speaking an
+  // empty utterance during a tap unlocks it for timer-fired alarms.
+  // (Full volume — iOS can leak a muted first utterance's volume into
+  // later ones.)
   if (!speechUnlocked && "speechSynthesis" in window) {
-    const u = new SpeechSynthesisUtterance(" ");
-    u.volume = 0;
-    speechSynthesis.speak(u);
+    speechSynthesis.resume();
+    speechSynthesis.speak(new SpeechSynthesisUtterance(""));
     speechUnlocked = true;
+    loadVoices();
   }
 }
 
@@ -42,14 +54,27 @@ export function beep() {
 }
 
 // Spoken alarms via the browser's built-in text-to-speech.
-// Note: no speechSynthesis.cancel() before speak — a Safari bug can
-// leave the engine permanently silent after cancel().
+// Defensive against iOS quirks: resume a possibly-paused engine, pick an
+// English voice explicitly, and beep instead if speech never starts.
 export function speak(phrase) {
   if (!("speechSynthesis" in window)) return beep();
+
+  speechSynthesis.resume();
   const u = new SpeechSynthesisUtterance(phrase);
+  u.lang = "en-US";
   u.rate = 1;
   u.volume = 1;
-  u.onerror = () => beep(); // fall back if speech is blocked
+  const en =
+    voices.find((v) => v.lang?.startsWith("en") && v.default) ||
+    voices.find((v) => v.lang?.startsWith("en")) ||
+    voices[0];
+  if (en) u.voice = en;
+
+  let started = false;
+  u.onstart = () => { started = true; };
+  u.onerror = () => { if (!started) beep(); };
+  setTimeout(() => { if (!started) beep(); }, 1200);
+
   speechSynthesis.speak(u);
 }
 
