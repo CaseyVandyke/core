@@ -56,7 +56,7 @@ export default function BodyWeight() {
           <label>Weight</label>
           <input type="number" inputMode="decimal" min="1" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
         </div>
-        <button className="shrink primary" type="submit">Log</button>
+        <button className="shrink blue" type="submit">Log</button>
       </form>
       {error && <div className="error">✳ {error}</div>}
       <p className="muted" style={{ fontSize: "0.8rem" }}>One entry per day — logging again on the same date replaces it.</p>
