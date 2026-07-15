@@ -2,14 +2,21 @@ import { useEffect, useState } from "react";
 import { api } from "./api.js";
 import { playAlarm, unlockAudio } from "./audio.js";
 
-const ALARM_SOUNDS = [
-  ["beep", "Beep"],
-  ["Time to lift.", "“Time to lift”"],
-  ["Rest is over. Get after it.", "“Get after it”"],
-  ["Back to the bar.", "“Back to the bar”"],
-  ["Go. Go. Go.", "“Go go go”"],
-  ["One more set. You got this.", "“You got this”"],
+const PHRASES = [
+  "Time to lift.",
+  "Rest is over. Get after it.",
+  "Back to the bar.",
+  "Go. Go. Go.",
+  "One more set. You got this.",
 ];
+
+const ALARM_SOUNDS = [
+  ["random", "Random phrase"],
+  ["beep", "Beep"],
+  ...PHRASES.map((p) => [p, `“${p.replace(/\.$/, "")}”`]),
+];
+
+const pickPhrase = () => PHRASES[Math.floor(Math.random() * PHRASES.length)];
 import Modal from "./Modal.jsx";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
@@ -42,7 +49,7 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
   useEffect(() => {
     if (alarmAt > 0 && restSecs != null && restSecs >= alarmAt && !alarmFired) {
       setAlarmFired(true);
-      playAlarm(alarmSound);
+      playAlarm(alarmSound === "random" ? pickPhrase() : alarmSound);
     }
   }, [restSecs, alarmAt, alarmFired, alarmSound]);
   const overTarget = alarmAt > 0 && restSecs != null && restSecs >= alarmAt;
@@ -291,7 +298,8 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
                 onChange={(e) => {
                   setAlarmSound(e.target.value);
                   unlockAudio();
-                  playAlarm(e.target.value); // preview the choice
+                  // preview the choice
+                  playAlarm(e.target.value === "random" ? pickPhrase() : e.target.value);
                 }}
               >
                 {ALARM_SOUNDS.map(([value, label]) => (
