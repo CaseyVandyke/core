@@ -265,9 +265,9 @@ th, td { padding: 0.4rem 0.6rem 0.4rem 0; border-bottom: 1px solid var(--line); 
   margin: 1rem 0 1.5rem;
 }
 
-/* Alarm reached: flash until the next set starts */
-@keyframes timer-blink { 50% { opacity: 0.2; } }
-.timer-big.over, .rest-timer.over b { animation: timer-blink 1s steps(2) infinite; }
+/* Alarm reached: smooth pulse until the next set starts */
+@keyframes timer-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.timer-big.over, .rest-timer.over b { animation: timer-pulse 1.4s ease-in-out infinite; }
 
 /* Training calendar heatmap */
 .cal { display: flex; gap: 3px; overflow-x: auto; padding-bottom: 0.5rem; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--accent) var(--cell); }
