@@ -133,6 +133,7 @@ button {
   border-radius: 0;
   padding: 0.55rem 1.2rem;
   cursor: pointer;
+  white-space: nowrap; /* wide buttons move to the next line whole, never stack words */
 }
 button:hover { color: var(--accent); border-color: var(--accent); }
 button.primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: bold; }
