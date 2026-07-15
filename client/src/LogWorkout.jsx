@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
+import { beep, unlockAudio } from "./audio.js";
 import Modal from "./Modal.jsx";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
@@ -23,11 +24,25 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
   }, [lastSetAt]);
   const restSecs = lastSetAt ? Math.max(0, Math.floor((now - lastSetAt) / 1000)) : null;
 
+  // rest alarm: beep + flash when rest reaches the target (0 = off)
+  const [alarmAt, setAlarmAt] = useState(() => Number(localStorage.getItem("core.restAlarm")) || 0);
+  const [alarmFired, setAlarmFired] = useState(false);
+  useEffect(() => { localStorage.setItem("core.restAlarm", alarmAt); }, [alarmAt]);
+  useEffect(() => {
+    if (alarmAt > 0 && restSecs != null && restSecs >= alarmAt && !alarmFired) {
+      setAlarmFired(true);
+      beep();
+    }
+  }, [restSecs, alarmAt, alarmFired]);
+  const overTarget = alarmAt > 0 && restSecs != null && restSecs >= alarmAt;
+
   function startTimer() {
     // reset both clock readings together, or the first render after a
     // restart compares a fresh start against a stale "now" and goes negative
     setNow(Date.now());
     setLastSetAt(Date.now());
+    setAlarmFired(false);
+    unlockAudio(); // called from a tap, which is when browsers allow sound
   }
 
   // entry row state
@@ -129,7 +144,7 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
         <div className="section-title">
           {isCardio ? "Add cardio" : "Add set"}
           {restSecs !== null && (
-            <span className="rest-timer" onClick={() => setTimerOpen(true)}>
+            <span className={`rest-timer${overTarget ? " over" : ""}`} onClick={() => setTimerOpen(true)}>
               rest <b>{mmss(restSecs)}</b>
             </span>
           )}
@@ -241,10 +256,25 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
       {timerOpen && restSecs !== null && (
         <Modal onClose={() => setTimerOpen(false)}>
           <div className="section-title">Rest timer</div>
-          <div className="timer-big">{mmss(restSecs)}</div>
+          <div className={`timer-big${overTarget ? " over" : ""}`}>{mmss(restSecs)}</div>
+          {overTarget
+            ? <p className="star" style={{ textAlign: "center" }}>{"✳︎"} time to lift</p>
+            : alarmAt > 0 && <p className="muted" style={{ textAlign: "center" }}>alarm at {mmss(alarmAt)}</p>}
           <div className="row">
-            <button onClick={startTimer}>Restart</button>
-            <button className="primary" onClick={() => setTimerOpen(false)}>Back to logging</button>
+            <div>
+              <label>Alarm</label>
+              <select
+                value={alarmAt}
+                onChange={(e) => { setAlarmAt(Number(e.target.value)); setAlarmFired(false); unlockAudio(); }}
+              >
+                <option value={0}>Off</option>
+                {[60, 90, 120, 150, 180, 240, 300].map((s) => (
+                  <option key={s} value={s}>{mmss(s)}</option>
+                ))}
+              </select>
+            </div>
+            <button className="shrink" onClick={startTimer}>Restart</button>
+            <button className="primary shrink" onClick={() => setTimerOpen(false)}>Back</button>
           </div>
         </Modal>
       )}
