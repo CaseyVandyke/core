@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { formatDate } from "./dates.js";
+import { startRegistration } from "@simplewebauthn/browser";
+import { api } from "./api.js";
+import { formatDate, shortDate } from "./dates.js";
+import { passkeysAvailable } from "./Login.jsx";
 import Modal from "./Modal.jsx";
 
 export default function Home({ workouts, onNavigate }) {
@@ -42,6 +45,58 @@ export default function Home({ workouts, onNavigate }) {
           <SetTable sets={latest.sets} />
         </div>
       )}
+
+      <PasskeySection />
+    </div>
+  );
+}
+
+// Face ID / Touch ID enrollment — only shown over https, where passkeys work
+function PasskeySection() {
+  const [keys, setKeys] = useState([]);
+  const [msg, setMsg] = useState("");
+  const available = passkeysAvailable();
+
+  const load = () => api.passkeys().then(setKeys);
+  useEffect(() => { if (available) load(); }, [available]);
+
+  if (!available) return null;
+
+  async function enroll() {
+    setMsg("");
+    try {
+      const options = await api.passkeyRegisterOptions();
+      const resp = await startRegistration({ optionsJSON: options });
+      await api.passkeyRegisterVerify(resp);
+      setMsg("Face ID enabled on this device.");
+      load();
+    } catch (err) {
+      if (err.name !== "NotAllowedError") setMsg(err.message);
+    }
+  }
+
+  async function remove(id) {
+    await api.deletePasskey(id);
+    load();
+  }
+
+  return (
+    <div className="section">
+      <div className="section-title">Face ID sign-in</div>
+      {keys.length === 0 ? (
+        <p className="muted">Skip the password: register this device's Face ID / Touch ID.</p>
+      ) : (
+        <p className="muted">
+          {keys.length} device{keys.length === 1 ? "" : "s"} registered
+          {keys.map((k) => (
+            <button key={k.id} className="small" style={{ marginLeft: "0.6rem" }} onClick={() => remove(k.id)}>
+              remove {shortDate(k.created_at.slice(0, 10))}
+            </button>
+          ))}
+        </p>
+      )}
+      <button className="blue" onClick={enroll}>✳ Enable on this device</button>
+      {msg && <p className="star">{msg}</p>}
     </div>
   );
 }

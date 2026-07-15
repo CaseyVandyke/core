@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { db } from "./db.js";
+import { addWebauthnRoutes } from "./webauthn.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -213,6 +214,9 @@ app.delete("/api/goals/:id", requireAuth, (req, res) => {
   if (info.changes === 0) return res.status(404).json({ error: "not found" });
   res.json({ ok: true });
 });
+
+// ---- Passkeys (Face ID / Touch ID sign-in) ----
+addWebauthnRoutes(app, requireAuth);
 
 // ---- Body weight ----
 // One entry per day; logging again on the same date replaces it.

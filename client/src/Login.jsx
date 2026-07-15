@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { startAuthentication } from "@simplewebauthn/browser";
 import { api } from "./api.js";
+
+// Passkeys only exist in secure (https) contexts on supporting browsers
+export const passkeysAvailable = () =>
+  window.isSecureContext && !!window.PublicKeyCredential;
 
 export default function Login({ onLogin }) {
   const [mode, setMode] = useState("login");
@@ -18,6 +23,18 @@ export default function Login({ onLogin }) {
     }
   }
 
+  async function faceId() {
+    setError("");
+    try {
+      const options = await api.passkeyLoginOptions();
+      const resp = await startAuthentication({ optionsJSON: options });
+      onLogin(await api.passkeyLoginVerify(resp));
+    } catch (err) {
+      // user cancelling the Face ID sheet isn't an error worth shouting about
+      if (err.name !== "NotAllowedError") setError(err.message);
+    }
+  }
+
   return (
     <div className="container">
       <h1>Core</h1>
@@ -32,6 +49,11 @@ export default function Login({ onLogin }) {
           <button className="primary shrink" type="submit">
             {mode === "login" ? "Log in" : "Create account"}
           </button>
+          {mode === "login" && passkeysAvailable() && (
+            <button className="blue shrink" type="button" onClick={faceId}>
+              Sign in with Face ID
+            </button>
+          )}
           <a
             className="muted shrink"
             onClick={() => setMode(mode === "login" ? "register" : "login")}

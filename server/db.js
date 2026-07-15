@@ -57,6 +57,16 @@ db.exec(`
     UNIQUE (user_id, exercise_id)
   );
 
+  CREATE TABLE IF NOT EXISTS passkeys (
+    id         INTEGER PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    cred_id    TEXT NOT NULL UNIQUE,
+    public_key TEXT NOT NULL,
+    counter    INTEGER NOT NULL DEFAULT 0,
+    transports TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
   CREATE TABLE IF NOT EXISTS bodyweight (
     id      INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
