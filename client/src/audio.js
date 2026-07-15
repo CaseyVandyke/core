@@ -14,7 +14,6 @@ export function unlockAudio() {
 }
 
 export function beep() {
-  navigator.vibrate?.([200, 100, 200, 100, 200]);
   if (!ctx || ctx.state !== "running") return;
   const t0 = ctx.currentTime;
   for (let i = 0; i < 3; i++) {
@@ -30,4 +29,21 @@ export function beep() {
     osc.start(start);
     osc.stop(start + 0.3);
   }
+}
+
+// Spoken alarms via the browser's built-in text-to-speech
+export function speak(phrase) {
+  if (!("speechSynthesis" in window)) return beep();
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(phrase);
+  u.rate = 1;
+  u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+// sound = "beep" or a phrase to say out loud
+export function playAlarm(sound) {
+  navigator.vibrate?.([200, 100, 200, 100, 200]);
+  if (!sound || sound === "beep") beep();
+  else speak(sound);
 }

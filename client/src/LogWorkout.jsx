@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
-import { beep, unlockAudio } from "./audio.js";
+import { playAlarm, unlockAudio } from "./audio.js";
+
+const ALARM_SOUNDS = [
+  ["beep", "Beep"],
+  ["Time to lift.", "“Time to lift”"],
+  ["Rest is over. Get after it.", "“Get after it”"],
+  ["Back to the bar.", "“Back to the bar”"],
+  ["Go. Go. Go.", "“Go go go”"],
+  ["One more set. You got this.", "“You got this”"],
+];
 import Modal from "./Modal.jsx";
 
 const today = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
@@ -24,16 +33,18 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
   }, [lastSetAt]);
   const restSecs = lastSetAt ? Math.max(0, Math.floor((now - lastSetAt) / 1000)) : null;
 
-  // rest alarm: beep + flash when rest reaches the target (0 = off)
+  // rest alarm: sound + color change when rest reaches the target (0 = off)
   const [alarmAt, setAlarmAt] = useState(() => Number(localStorage.getItem("core.restAlarm")) || 0);
+  const [alarmSound, setAlarmSound] = useState(() => localStorage.getItem("core.restAlarmSound") || "beep");
   const [alarmFired, setAlarmFired] = useState(false);
   useEffect(() => { localStorage.setItem("core.restAlarm", alarmAt); }, [alarmAt]);
+  useEffect(() => { localStorage.setItem("core.restAlarmSound", alarmSound); }, [alarmSound]);
   useEffect(() => {
     if (alarmAt > 0 && restSecs != null && restSecs >= alarmAt && !alarmFired) {
       setAlarmFired(true);
-      beep();
+      playAlarm(alarmSound);
     }
-  }, [restSecs, alarmAt, alarmFired]);
+  }, [restSecs, alarmAt, alarmFired, alarmSound]);
   const overTarget = alarmAt > 0 && restSecs != null && restSecs >= alarmAt;
 
   function startTimer() {
@@ -273,6 +284,23 @@ export default function LogWorkout({ exercises, onSaved, onNavigate, onExerciseA
                 ))}
               </select>
             </div>
+            <div>
+              <label>Sound</label>
+              <select
+                value={alarmSound}
+                onChange={(e) => {
+                  setAlarmSound(e.target.value);
+                  unlockAudio();
+                  playAlarm(e.target.value); // preview the choice
+                }}
+              >
+                {ALARM_SOUNDS.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="row" style={{ marginTop: "0.75rem" }}>
             <button className="shrink" onClick={startTimer}>Restart</button>
             <button className="primary shrink" onClick={() => setTimerOpen(false)}>Back</button>
           </div>
