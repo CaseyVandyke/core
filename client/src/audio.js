@@ -4,13 +4,23 @@
 
 let ctx;
 
+let speechUnlocked = false;
+
 export function unlockAudio() {
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    ctx = new AC();
+    if (AC) ctx = new AC();
   }
-  if (ctx.state === "suspended") ctx.resume();
+  if (ctx && ctx.state === "suspended") ctx.resume();
+
+  // iOS also gates text-to-speech behind a user gesture: speaking a
+  // silent utterance during a tap unlocks it for later timer-fired alarms
+  if (!speechUnlocked && "speechSynthesis" in window) {
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    speechSynthesis.speak(u);
+    speechUnlocked = true;
+  }
 }
 
 export function beep() {
@@ -31,13 +41,15 @@ export function beep() {
   }
 }
 
-// Spoken alarms via the browser's built-in text-to-speech
+// Spoken alarms via the browser's built-in text-to-speech.
+// Note: no speechSynthesis.cancel() before speak — a Safari bug can
+// leave the engine permanently silent after cancel().
 export function speak(phrase) {
   if (!("speechSynthesis" in window)) return beep();
-  speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(phrase);
   u.rate = 1;
   u.volume = 1;
+  u.onerror = () => beep(); // fall back if speech is blocked
   speechSynthesis.speak(u);
 }
 
